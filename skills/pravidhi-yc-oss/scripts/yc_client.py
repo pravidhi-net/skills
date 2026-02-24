@@ -1,4 +1,15 @@
 #!/usr/bin/env python3
+"""
+Y Combinator Company Intelligence Tool
+Fixed version - Bug fix: removed invalid 'limit' argument from filter_data() call
+
+Usage:
+    python3 yc_client.py --mode top --sort-by team_size
+    python3 yc_client.py --mode batch --target w25
+    python3 yc_client.py --mode tag --target artificial-intelligence
+    python3 yc_client.py --info
+"""
+
 import urllib.request
 import urllib.error
 import json
@@ -14,9 +25,9 @@ TIMEOUT_SECONDS = 15
 
 # Hardcoded taxonomy for fallback/info mode to avoid extra file I/O
 TAXONOMY = {
-    "batches": ["w24", "s23", "w23", "s22", "w22", "s21", "w21", "s20", "w20"],
+    "batches": ["w25", "s24", "w24", "s23", "w23", "s22", "w22", "s21", "w21", "s20", "w20"],
     "industries": ["b2b", "consumer", "education", "fintech", "healthcare", "industrials", "real-estate", "government"],
-    "tags": ["artificial-intelligence", "generative-ai", "developer-tools", "saas", "marketplace", "biotech", "crypto", "open-source", "climate"]
+    "tags": ["artificial-intelligence", "generative-ai", "developer-tools", "saas", "marketplace", "biotech", "crypto", "open-source", "climate", "robotics"]
 }
 
 def fetch_json(endpoint):
@@ -24,7 +35,7 @@ def fetch_json(endpoint):
     url = f"{BASE_URL}/{endpoint}"
     if not url.endswith('.json'):
         url += '.json'
-        
+
     try:
         req = urllib.request.Request(url, headers=HEADERS)
         with urllib.request.urlopen(req, timeout=TIMEOUT_SECONDS) as response:
@@ -50,25 +61,25 @@ def format_company(company):
     try:
         name = safe_get(company, 'name', 'Unknown')
         batch = safe_get(company, 'batch', 'N/A')
-        
+
         # Safe string handling for descriptions
         one_liner = safe_get(company, 'one_liner')
         long_desc = safe_get(company, 'long_description')
-        
+
         desc_text = one_liner if one_liner else (long_desc if long_desc else '')
         desc = str(desc_text)[:100] + "..." if len(str(desc_text)) > 100 else str(desc_text)
-        
+
         website = safe_get(company, 'website', 'N/A')
         team = safe_get(company, 'team_size', 0)
-        
-        return f"- **{name}** ({batch}) | Team: {team} | {website}\n  {desc}"
+
+        return f"- **{name}** ({batch}) | Team: {team} | {website}\n    {desc}"
     except Exception as e:
         return f"- [Error formatting record: {str(e)}]"
 
 def filter_data(data, keyword=None, min_team=0, year=None):
     """Apply filters to the dataset with regex matching."""
     results = []
-    
+
     # Pre-compile regex if keyword exists
     keyword_regex = None
     if keyword:
@@ -88,27 +99,27 @@ def filter_data(data, keyword=None, min_team=0, year=None):
         if keyword:
             tags = safe_get(c, 'tags', [])
             tag_str = " ".join(tags) if isinstance(tags, list) else str(tags)
-            
+
             blob = (
                 f"{safe_get(c, 'name', '')} "
                 f"{safe_get(c, 'one_liner', '')} "
                 f"{tag_str} "
                 f"{safe_get(c, 'industry', '')}"
             )
-            
+
             if keyword_regex:
                 if not keyword_regex.search(blob):
                     continue
             else:
                 if keyword.lower() not in blob.lower():
                     continue
-                
+
         # Team size filter
         if min_team > 0:
             team_size = safe_get(c, 'team_size', 0)
             if not isinstance(team_size, (int, float)) or team_size < min_team:
                 continue
-                
+
         # Year filter (Launch year)
         if year:
             launched = safe_get(c, 'launched_at')
@@ -123,7 +134,7 @@ def filter_data(data, keyword=None, min_team=0, year=None):
                     continue 
             except:
                 continue
-                
+            
         results.append(c)
     return results
 
@@ -145,7 +156,7 @@ def main():
     parser.add_argument('--limit', type=int, default=10, help="Max results to display")
     parser.add_argument('--sort-by', choices=['team_size', 'launched_at'], help="Sort criteria")
     parser.add_argument('--info', action='store_true', help="List valid batches, industries, and tags")
-    
+
     args = parser.parse_args()
 
     if args.info:
@@ -181,10 +192,9 @@ def main():
 
     # Fetch
     data = fetch_json(endpoint)
-    
-    # Process
-    results = filter_data(data, keyword=args.keyword, limit=args.limit) # Passing limit isn't strictly necessary here as it's sliced later, but kept for clarity if logic expands
-    
+
+    results = filter_data(data, keyword=args.keyword)
+
     # Sort
     if args.sort_by == 'team_size':
         results.sort(key=lambda x: safe_get(x, 'team_size', 0), reverse=True)
@@ -199,4 +209,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
