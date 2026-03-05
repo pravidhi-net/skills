@@ -40,7 +40,33 @@ A complete, opinionated Git workflow skill that enforces quality, security, and 
 
 ---
 
-### 2. **Internet Search Skill (DDGS)** (`pravidhi-ddgs-internet-search`)
+### 2. **Bug Review Pipeline** (`pravidhi-bug-review-pipeline`)
+
+A three-phase adversarial code review system that uses multiple agents to find and validate bugs.
+
+**What it does:**
+- Phase 1: Bug Finder agent maximizes bug discovery across the codebase
+- Phase 2: Bug Adversary agent challenges false positives with high confidence thresholds
+- Phase 3: Arbiter agent issues final verdicts on discovered issues
+- Produces deduplicated, high-confidence bug reports with severity scoring
+
+**When to use:**
+- Finding bugs and code quality issues in a codebase
+- Auditing code for security vulnerabilities and correctness problems
+- Running comprehensive code review workflows
+- Analyzing repositories for performance, data integrity, and API compliance issues
+
+**Key features:**
+- Adversarial review process (agents check each other's work)
+- Scoring system (Critical: 10pts, Medium: 5pts, Low: 1pt)
+- Comprehensive issue categorization (security, correctness, data integrity, performance, etc.)
+- Structured report output with evidence and suggested fixes
+
+[View Skill](skills/pravidhi-bug-review-pipeline/SKILL.md)
+
+---
+
+### 3. **Internet Search Skill (DDGS)** (`pravidhi-ddgs-internet-search`)
 
 Perform web searches using DuckDuckGo with soft-failure mode and context-safe output.
 
@@ -63,7 +89,7 @@ Perform web searches using DuckDuckGo with soft-failure mode and context-safe ou
 
 ---
 
-### 3. **Y Combinator Companies Intelligence** (`pravidhi-yc-oss`)
+### 4. **Y Combinator Companies Intelligence** (`pravidhi-yc-oss`)
 
 Robust tool to fetch and analyze Y Combinator company data without guessing URLs or crashes.
 
@@ -89,6 +115,10 @@ Add any skill to your agent using the skills command-line tool:
 
 ```bash
 npx skills add https://github.com/pravidhi-net/skills --skill pravidhi-commit-protocol
+```
+
+```bash
+npx skills add https://github.com/pravidhi-net/skills --skill pravidhi-bug-review-pipeline
 ```
 
 ```bash
